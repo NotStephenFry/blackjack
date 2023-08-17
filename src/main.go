@@ -13,10 +13,10 @@ func main() {
 
 	ai := player.AI{
 		LearningRate:   0.1,
-		DecayRate:      0.999999,
-		DiscountFactor: 0.75,
+		DecayRate:      0.9999925,
+		DiscountFactor: 0.95,
 		Epsilon:        0,
-		ExploitRate:    0.00001,
+		ExploitRate:    0.000001,
 	}
 	ai.Initialise()
 
@@ -24,7 +24,7 @@ func main() {
 
 	game := game.Game{
 		Deck:   deck,
-		AI:     ai,
+		AI:     &ai,
 		Dealer: dealer,
 	}
 

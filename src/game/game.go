@@ -8,7 +8,7 @@ import (
 
 type Game struct {
 	Deck   deck.Deck
-	AI     player.AI
+	AI     *player.AI
 	Dealer player.Dealer
 }
 
@@ -53,14 +53,14 @@ func (this *Game) Play() {
 			// AI has decided to draw a card
 			this.AI.GiveCard(this.Deck.DrawCard())
 
-			if this.DetermineWinner() == -1 {
+			if this.AI.GetScore() >= 22 {
 				// AI lost due to drawing a card - maximum punishment
 				fmt.Println("AI busts!!")
 				this.AI.GiveReward(currentScore, hasUnusedAce, decision, -1)
 				break
 			} else {
 				// AI is still in the game! Give it partial reward for not losing
-				this.AI.GiveReward(currentScore, hasUnusedAce, decision, 0.1)
+				this.AI.GiveReward(currentScore, hasUnusedAce, decision, 0.25)
 			}
 		} else {
 			// AI has decided to stop drawing cards
@@ -68,7 +68,7 @@ func (this *Game) Play() {
 		}
 	}
 
-	if this.DetermineWinner() != -1 {
+	if this.DetermineWinner() != -1 && decision == player.ActionStand {
 		// AI has not lost yet - we need to determine the dealer's actions now
 
 		// Dealer reveals hidden cards

@@ -9,7 +9,7 @@ import (
 
 type AI struct {
 	cards          []*deck.Card
-	qTable         [23][11][2][2]float64
+	qTable         [25][11][2][2]float64
 	DealersCard    int
 	LearningRate   float64
 	DecayRate      float64
@@ -22,7 +22,7 @@ func (this *AI) Initialise() {
 	// Set all possible actions to 0 expected reward
 
 	// Possible player card value
-	for i := 1; i <= 22; i++ {
+	for i := 1; i <= 23; i++ {
 
 		// Revealed dealer card
 		for j := 0; j <= 10; j++ {
@@ -40,21 +40,28 @@ func (this *AI) Initialise() {
 }
 
 func (this *AI) DecideNextAction() Action {
-	fmt.Println("AI current has score of ", this.GetScore())
+	d := rand.Float64()
+	fmt.Println("Dec is ", d)
+
+	fmt.Println("== AI is deciding what to do ==")
+	fmt.Println("AI currently has score of ", this.GetScore())
 	// Determine whether we should exploit or explore
+	fmt.Println("Epsilon is ", this.Epsilon)
+
 	exp := rand.Float64()
+	fmt.Println("Rand is ", exp)
 
 	if this.Epsilon > exp {
 		fmt.Println("AI chose to exploit")
 		// Exploitation - choose best action
-		ace := 0
+		/*ace := 0
 		if this.HasUnusedAce() {
 			ace = 1
-		}
+		}*/
 
-		rewardHit := this.qTable[this.GetScore()][this.DealersCard][ace][ActionHit]
+		rewardHit := this.qTable[this.GetScore()][this.DealersCard][0][ActionHit]
 		fmt.Println("AI thinks hitting will give ", rewardHit, " reward")
-		rewardStand := this.qTable[this.GetScore()][this.DealersCard][ace][ActionStand]
+		rewardStand := this.qTable[this.GetScore()][this.DealersCard][0][ActionStand]
 		fmt.Println("AI thinks standing will give ", rewardStand, " reward")
 
 		if rewardHit > rewardStand {
@@ -71,7 +78,7 @@ func (this *AI) DecideNextAction() Action {
 	// Exploration - random action
 	fmt.Println("AI chose to explore")
 
-	if exp >= 0.5 {
+	if d > float64(0.5) {
 		fmt.Println("AI chose to stand")
 		return ActionStand
 	}
@@ -149,7 +156,13 @@ func (this *AI) HasUnusedAce() bool {
 
 func (this *AI) lookup(playerScore int, dealerScore int, hasUsableAce int, decision int) float64 {
 	p := int(math.Min(22, float64(playerScore)))
-	return this.qTable[p][dealerScore][hasUsableAce][decision]
+
+	// TODO: in calculating the maximum expected reward, we need to predict a maximum punishment if the dealt card would bust the AI
+	if p == 22 {
+		return -20
+	}
+
+	return this.qTable[p][dealerScore][0][decision]
 }
 
 func (this *AI) calculateExpectedHitReward(playerScore int, dealerScore int, ace int) float64 {
@@ -219,37 +232,37 @@ func (this *AI) calculateExpectedHitReward(playerScore int, dealerScore int, ace
 }
 
 func (this *AI) GiveReward(oldScore int, hadUsableAce bool, decision Action, reward float64) {
-	ace := 0
+	/*ace := 0
 	if hadUsableAce == true {
 		ace = 1
-	}
+	}*/
 
-	currentReward := this.qTable[oldScore][this.DealersCard][ace][decision]
+	currentReward := this.qTable[oldScore][this.DealersCard][0][decision]
 	var nextReward float64
 
 	if decision == ActionStand {
 		// Expected reward by staying in the current state
 		nextReward = currentReward
 	} else {
-		nextReward = this.calculateExpectedHitReward(oldScore, this.DealersCard, ace)
+		nextReward = this.calculateExpectedHitReward(oldScore, this.DealersCard, 0)
 	}
 
-	fmt.Println("AI had score of: ", oldScore, ". Dealer's card was: ", this.DealersCard, ". Had unused ace: ", ace, ". Decision was to: ", decision)
+	fmt.Println("AI had score of: ", oldScore, ". Dealer's card was: ", this.DealersCard, ". Had unused ace: ", 0, ". Decision was to: ", decision)
 	fmt.Println("Current reward for this state/action: ", currentReward)
-	fmt.Println("Expected reward for this state/action: ", nextReward)
+	fmt.Println("Expected future reward: ", nextReward)
 	fmt.Println("Actual reward for this state/action: ", reward)
 
 	// Bellman equation to update the qtable
-	this.qTable[oldScore][this.DealersCard][ace][decision] = ((1 - this.LearningRate) * currentReward) + (this.LearningRate * (reward + (this.DiscountFactor * nextReward)))
+	this.qTable[oldScore][this.DealersCard][0][decision] = ((1 - this.LearningRate) * currentReward) + (this.LearningRate * (reward + (this.DiscountFactor * nextReward)))
 
-	fmt.Println("Updated reward for this state/action: ", this.qTable[oldScore][this.DealersCard][ace][decision])
+	fmt.Println("Updated reward for this state/action: ", this.qTable[oldScore][this.DealersCard][0][decision])
 
 	// Decay the learning rate
 	this.LearningRate *= this.DecayRate
 }
 
 func (this *AI) Episode() {
-	fmt.Println(this.ExploitRate)
+	fmt.Println(this.LearningRate)
 	this.Epsilon += this.ExploitRate
 }
 
