@@ -30,9 +30,11 @@ func main() {
 
 	fmt.Println("starting main game loop")
 	gameNumber := 0
-	for {
+	for gameNumber <= 250000 {
 		gameNumber++
 		fmt.Println("Game Number: ", gameNumber)
 		game.Play()
 	}
+
+	ai.DumpBrain()
 }

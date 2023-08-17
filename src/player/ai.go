@@ -252,3 +252,26 @@ func (this *AI) Episode() {
 	fmt.Println(this.ExploitRate)
 	this.Epsilon += this.ExploitRate
 }
+
+func (this *AI) DumpBrain() {
+	for i := 1; i <= 22; i++ {
+
+		// Revealed dealer card
+		for j := 0; j <= 10; j++ {
+
+			// Has usable ace
+			outcome := "???"
+
+			rewardStand := this.qTable[i][j][0][ActionStand]
+			rewardHit := this.qTable[i][j][0][ActionHit]
+
+			if rewardStand > rewardHit {
+				outcome = "STAND"
+			} else if rewardStand < rewardHit {
+				outcome = "HIT"
+			}
+
+			fmt.Println("AI had score of: ", i, ". Dealer's card was: ", j, ". Best action is ", outcome, " (", rewardStand, " VS ", rewardHit, ")")
+		}
+	}
+}
